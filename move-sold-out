@@ -1,0 +1,12 @@
+  <div class="row products">
+    {% for product in collection.products limit: settings.pagination_limit %}
+    {% if product.available %}
+    {% include 'product-loop' with collection.handle %}
+    {% endif %}
+    {% endfor %}
+    {% for product in collection.products limit: settings.pagination_limit %}
+    {% unless product.available %}
+    {% include 'product-loop' with collection.handle %}
+    {% endunless %}
+    {% endfor %}
+  </div>
