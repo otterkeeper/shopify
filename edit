@@ -1,0 +1,36 @@
+{% comment %}
+BEGIN CODE BY ENGAGE
+{% endcomment %}
+
+{% assign unsortedProducts = collection.products | reverse | reverse %}
+
+{% for product in unsortedProducts %}
+	{% assign sliceIndex = forloop.index0 %}
+	{% assign aProduct = unsortedProducts | slice: sliceIndex, 1 %}
+
+	{% if product.available == true %}
+		{% if availableProducts.size == 0 %}
+			{% assign availableProducts = aProduct %}
+		{% else %}
+			{% assign availableProducts = availableProducts | concat:aProduct %}
+		{% endif %}
+	{% else %}
+		{% if unavailableProducts.size == 0 %}
+			{% assign unavailableProducts = aProduct %}
+		{% else %}
+			{% assign unavailableProducts = unavailableProducts | concat: aProduct %}
+		{% endif %}
+	{% endif %}
+{% endfor %}
+
+{% assign sortedProducts = collection.products %}
+{% if unavailableProducts.size > 0 and availableProducts.size > 0 %}
+	{% assign sortedProducts = availableProducts | concat:unavailableProducts %}
+{% endif %}
+
+{% comment %}
+END OF CODE BY ENGAGE
+{% endcomment %}
+
+
+{% include 'breadcrumb', product: sortedProducts[sortedProductsIndex] %}
