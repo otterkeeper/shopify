@@ -1,0 +1,58 @@
+These examples are based on the Supply and Simple themes, they may need to be adjusted for other themes)
+
+In the section collection-template.liquid, we have to locate the line doing the pagination (Simple theme example here):
+
+{% paginate collection.products by 12 %}
+Then add this snippet above the pagination line:
+
+{% assign unsortedProducts = collection.products | reverse | reverse %}
+{% comment %}
+Yes I know, reverse | reverse looks redundant, but there does seem to be some value in getting an array out of the reverse filter instead of trying to use collection.products directly (avoids an error where concat complains that is needs an array argument), and since we don't want to actually change the order here, we have to reverse it back.
+{% endcomment %}
+
+{% for product in unsortedProducts %}
+	{% assign sliceIndex = forloop.index0 %}
+	{% assign aProduct = unsortedProducts | slice: sliceIndex, 1 %}
+
+	{% if product.available == true %}
+		{% if availableProducts.size == 0 %}
+			{% assign availableProducts = aProduct %}
+		{% else %}
+			{% assign availableProducts = availableProducts | concat:aProduct %}
+		{% endif %}
+	{% else %}
+		{% if unavailableProducts.size == 0 %}
+			{% assign unavailableProducts = aProduct %}
+		{% else %}
+			{% assign unavailableProducts = unavailableProducts | concat: aProduct %}
+		{% endif %}
+	{% endif %}
+{% endfor %}
+
+{% assign sortedProducts = collection.products %}
+{% if unavailableProducts.size > 0 and availableProducts.size > 0 %}
+	{% assign sortedProducts = availableProducts | concat:unavailableProducts %}
+{% endif %}
+ 
+
+Then the line that passes the product to the grid or list snippet needs to be changed. For the Simple theme, the line is:
+
+{% include 'product-grid-item' %}
+And that line needs to be replaced with this:
+
+{% assign sortedProductsIndex = paginate.current_offset | plus: forloop.index0 %}
+{% include 'product-grid-item', product: sortedProducts[sortedProductsIndex] %}
+---
+
+The idea of the code snippets above should be applicable to other themes, but if the syntax or variable names are different it may need some adjustments.
+
+For example, in the Brooklyn theme, if you are using the product grid collage instead of the regular grid, you would need to replace this line:
+
+{% include 'product-grid-collage' %}
+With this snippet:
+
+{% assign sortedProductsIndex = paginate.current_offset | plus: forloop.index0 %}
+{% include 'product-grid-collage', product: sortedProducts[sortedProductsIndex] %}
+---
+
+Hope this helps, let me know if you have any issues or questions.
